@@ -1,0 +1,4 @@
+Flask==3.0.3
+langchain==1.0.0
+langchain-google-genai
+gunicorn==23.0.0

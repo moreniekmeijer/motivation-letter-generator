@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Motivation Letter Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <h1>Motivation Letter Generator</h1>
+    <form method="POST">
+        <label>Tell us about yourself:</label><br>
+        <textarea name="user_info" rows="5" cols="50" placeholder="Education, experience, skills..."></textarea><br><br>
+
+        <label>Paste the job description:</label><br>
+        <textarea name="job_description" rows="10" cols="50"
+            placeholder="Job responsibilities, requirements..."></textarea><br><br>
+
+        <button type="submit">Generate Letter</button>
+    </form>
+</body>
+
+</html>
