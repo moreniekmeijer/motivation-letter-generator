@@ -1,17 +1,13 @@
-// ===== CONFIGURATIE =====
-const DAILY_LIMIT = 10;
+const DAILY_LIMIT = 3;
 
-// ===== DOM ELEMENTEN =====
 const generateBtn = document.getElementById('generate-btn');
 const loadingSpinner = document.getElementById('loading-spinner');
 const generateForm = document.getElementById('generate-form');
 
-// ===== GENERATIE LIMIET FUNCTIES =====
 function getGenerationsToday() {
     const today = new Date().toLocaleDateString();
     const generations = JSON.parse(localStorage.getItem('generations') || '{}');
 
-    // Oude data opruimen
     Object.keys(generations).forEach(date => {
         if (date !== today) delete generations[date];
     });
@@ -38,7 +34,6 @@ function updateGenerationLimit() {
     generateBtn.disabled = remaining === 0;
 }
 
-// ===== FORM HANDLING =====
 function handleFormSubmit(event) {
     const todayCount = getGenerationsToday();
 
@@ -48,7 +43,6 @@ function handleFormSubmit(event) {
         return;
     }
 
-    // Toon spinner, verberg knop
     generateBtn.classList.add('hidden');
     loadingSpinner.classList.remove('hidden');
 
@@ -62,7 +56,6 @@ function resetFormUI() {
     generateBtn.disabled = false;
 }
 
-// ===== GESCHIEDENIS FUNCTIES =====
 function loadHistory() {
     const container = document.getElementById('history');
     const history = JSON.parse(localStorage.getItem('letters') || '[]');
@@ -110,7 +103,6 @@ function deleteLetter(index) {
     loadHistory();
 }
 
-// ===== NIEUWE BRIEF OPSLAAN =====
 function saveNewLetter(title, content) {
     try {
         const history = JSON.parse(localStorage.getItem('letters') || '[]');
@@ -123,7 +115,6 @@ function saveNewLetter(title, content) {
         history.unshift(newLetter);
         localStorage.setItem('letters', JSON.stringify(history));
 
-        // Auto-download
         const blob = new Blob([content], { type: 'text/plain' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -138,30 +129,24 @@ function saveNewLetter(title, content) {
     }
 }
 
-// ===== UTILITY FUNCTIES =====
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-// ===== EVENT LISTENERS =====
 function initializeEventListeners() {
-    // Form submit
     generateForm.addEventListener('submit', handleFormSubmit);
 
-    // Herstel UI na terugkeer van pagina
     window.addEventListener('pageshow', resetFormUI);
 }
 
-// ===== INITIALISATIE =====
 function initialize() {
     loadHistory();
     updateGenerationLimit();
     initializeEventListeners();
 }
 
-// Start de applicatie wanneer DOM geladen is
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize);
 } else {

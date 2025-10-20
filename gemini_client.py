@@ -1,8 +1,6 @@
 import os
 from langchain.prompts import PromptTemplate
-from langchain.schema.runnable import RunnableSequence
 from langchain_google_genai import ChatGoogleGenerativeAI
-
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",
@@ -10,7 +8,20 @@ llm = ChatGoogleGenerativeAI(
     google_api_key=os.getenv("GOOGLE_API_KEY")
 )
 
+
+def get_prompt_prefix(language: str, tone: str):
+    """
+    Returns a language + tone specific prefix for each prompt.
+    """
+    if language.lower().startswith("n"):
+        return f"Schrijf in het {language.lower()} een motivatiebrief in een {tone.lower()} toon."
+    else:
+        return f"Write the motivation letter in {language} with a {tone.lower()} tone."
+
+
 intro_prompt = PromptTemplate.from_template("""
+{prefix}
+
 You are writing the introduction paragraph for a professional motivation letter.
 It should sound personal, enthusiastic, and relevant.
 
@@ -21,6 +32,8 @@ Write only the introduction paragraph.
 """)
 
 strengths_prompt = PromptTemplate.from_template("""
+{prefix}
+
 Continue the motivation letter naturally after the introduction below.
 
 Introduction:
@@ -34,6 +47,8 @@ User information:
 """)
 
 match_prompt = PromptTemplate.from_template("""
+{prefix}
+
 Continue the motivation letter naturally after the previous paragraphs.
 
 Introduction:
@@ -49,6 +64,8 @@ Job description:
 """)
 
 closing_prompt = PromptTemplate.from_template("""
+{prefix}
+
 You are finishing a motivation letter that currently contains the following paragraphs:
 
 Introduction:
@@ -64,27 +81,45 @@ Write a polite, optimistic closing paragraph that fits naturally with the rest o
 """)
 
 
-def generate_motivation_letter(user_info: str, job_description: str) -> str:
-    intro = (intro_prompt | llm).invoke({"user_info": user_info})
+def generate_motivation_letter(user_info: str, job_description: str, language: str = "English", tone: str = "Formal") -> str:
+    """
+    Generate a motivation letter in a given language and tone.
+    Supported languages: English, Dutch.
+    Supported tones: Formal, Friendly, Enthusiastic, Confident, etc.
+    """
+    prefix = get_prompt_prefix(language, tone)
+
+    intro = (intro_prompt | llm).invoke({
+        "prefix": prefix,
+        "user_info": user_info
+    })
+
     strengths = (strengths_prompt | llm).invoke({
+        "prefix": prefix,
         "intro": intro.content,
         "user_info": user_info
     })
+
     match = (match_prompt | llm).invoke({
+        "prefix": prefix,
         "intro": intro.content,
         "strengths": strengths.content,
         "user_info": user_info,
         "job_description": job_description
     })
+
     closing = (closing_prompt | llm).invoke({
+        "prefix": prefix,
         "intro": intro.content,
         "strengths": strengths.content,
         "match": match.content
     })
 
-    letter = f"""{intro.content.strip()}
-        {strengths.content.strip()}
-        {match.content.strip()}
-        {closing.content.strip()}"""
+    letter = "\n\n".join([
+        intro.content.strip(),
+        strengths.content.strip(),
+        match.content.strip(),
+        closing.content.strip()
+    ])
 
     return letter

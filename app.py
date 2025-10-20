@@ -23,8 +23,11 @@ def index():
             sanitized_user_info = user_info
             sanitized_job_description = job_description
 
+        language = request.form.get("language", "English")
+        tone = request.form.get("tone", "Formal")
+
         letter = generate_motivation_letter(
-            sanitized_user_info, sanitized_job_description
+            sanitized_user_info, sanitized_job_description, language, tone
         )
 
     return render_template("index.html", letter=letter, title=title)

@@ -18,12 +18,33 @@
             <input type="text" id="title" name="title" placeholder="e.g. Hostnet Application" required>
 
             <label for="user_info">Tell us about yourself:</label>
-            <textarea id="user_info" name="user_info" rows="5"
+            <textarea id="user_info" name="user_info" rows="4"
                 placeholder="Education, experience, skills..."></textarea>
 
             <label for="job_description">Paste the job description:</label>
-            <textarea id="job_description" name="job_description" rows="10"
+            <textarea id="job_description" name="job_description" rows="4"
                 placeholder="Job responsibilities, requirements..."></textarea>
+            
+            <div class="selectors">
+                <div>
+                    <label for="language">Select language:</label>
+                    <select id="language" name="language">
+                        <option value="English" selected>English</option>
+                        <option value="Dutch">Nederlands</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="tone">Select tone:</label>
+                    <select id="tone" name="tone">
+                        <option value="Formal" selected>Formal</option>
+                        <option value="Friendly">Friendly</option>
+                        <option value="Enthusiastic">Enthusiastic</option>
+                        <option value="Confident">Confident</option>
+                        <option value="Warm">Warm</option>
+                    </select>
+                </div>
+            </div>
 
             <button type="submit" id="generate-btn">Generate Letter</button>
 
@@ -37,13 +58,10 @@
         <div id="history"></div>
     </div>
 
-    <!-- Main JavaScript -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 
-    <!-- Jinja2: Save letter after generation -->
     {% if letter %}
     <script>
-        // Roep saveNewLetter aan zodra de pagina geladen is
         window.addEventListener('DOMContentLoaded', function () {
             saveNewLetter({{ title| tojson }}, {{ letter| tojson }});
         });
