@@ -1,8 +1,9 @@
 import os
 from langchain.prompts import PromptTemplate
-from langchain.schema.runnable import RunnableSequence
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+
+# ====== MODEL CONFIG ======
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",
     temperature=0.7,
@@ -10,18 +11,20 @@ llm = ChatGoogleGenerativeAI(
 )
 
 
+# ====== HELPER FUNCTIES ======
 def get_prompt_prefix(language: str, tone: str) -> str:
     """
     Return a language + tone specific prefix for each prompt.
     """
     lang = language.lower()
     tone = tone.lower()
+
     if lang.startswith("n"):
         return f"Schrijf in het Nederlands een motivatiebrief in een {tone} toon."
     return f"Write the motivation letter in English with a {tone} tone."
 
 
-# --- Prompt Templates ---
+# ====== PROMPTS ======
 intro_prompt = PromptTemplate.from_template("""
 {prefix}
 
@@ -84,6 +87,7 @@ Write a polite, optimistic closing paragraph that fits naturally with the rest o
 """)
 
 
+# ====== GENERATE FUNCTION ======
 def generate_motivation_letter(
     user_info: str,
     job_description: str,
@@ -97,23 +101,20 @@ def generate_motivation_letter(
     """
     prefix = get_prompt_prefix(language, tone)
 
-    chain = RunnableSequence(
-        intro_prompt | llm,
-        strengths_prompt | llm,
-        match_prompt | llm,
-        closing_prompt | llm
-    )
-
-    inputs = {
+    # ---- Step 1: Introduction ----
+    intro = (intro_prompt | llm).invoke({
         "prefix": prefix,
-        "user_info": user_info,
-        "job_description": job_description
-    }
+        "user_info": user_info
+    })
 
-    intro = (intro_prompt | llm).invoke(
-        {"prefix": prefix, "user_info": user_info})
-    strengths = (strengths_prompt | llm).invoke(
-        {"prefix": prefix, "intro": intro.content, "user_info": user_info})
+    # ---- Step 2: Strengths ----
+    strengths = (strengths_prompt | llm).invoke({
+        "prefix": prefix,
+        "intro": intro.content,
+        "user_info": user_info
+    })
+
+    # ---- Step 3: Job Alignment ----
     match = (match_prompt | llm).invoke({
         "prefix": prefix,
         "intro": intro.content,
@@ -121,6 +122,8 @@ def generate_motivation_letter(
         "user_info": user_info,
         "job_description": job_description
     })
+
+    # ---- Step 4: Closing ----
     closing = (closing_prompt | llm).invoke({
         "prefix": prefix,
         "intro": intro.content,
@@ -128,6 +131,7 @@ def generate_motivation_letter(
         "match": match.content
     })
 
+    # ---- Combine everything ----
     letter = "\n\n".join([
         intro.content.strip(),
         strengths.content.strip(),
