@@ -1,4 +1,4 @@
-const DAILY_LIMIT = 20;
+const DAILY_LIMIT = 3;
 
 const generateBtn = document.getElementById('generate-btn');
 const loadingSpinner = document.getElementById('loading-spinner');

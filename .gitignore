@@ -51,6 +51,3 @@ coverage.xml
 .idea/
 *.swp
 *.swo
-
-# Project-specific
-letter_output/

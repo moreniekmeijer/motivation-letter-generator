@@ -10,11 +10,11 @@ Powered by **Google Gemini** and **LangChain**, it writes natural, personalized 
 
 ## Features
 
-- Generates full motivation letters using **Gemini 2.0 Flash**
+- Generates motivation letters using **Gemini 2.0 Flash**
 - Supports **English** and **Dutch**
 - Adjustable tone — _formal, friendly, enthusiastic_, etc.
 - Letters are saved locally in your browser
-- Daily limit (up to 10 letters per day)
+- Daily limit (up to 3 letters per day)
 - Auto-download after generation
 - Clean, minimal interface with live loading animation
 
