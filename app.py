@@ -1,40 +1,33 @@
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request
 from gemini_client import generate_motivation_letter
-import os
-import uuid
 import helpers
+import os
 
 app = Flask(__name__)
-OUTPUT_DIR = "letter_output"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret")
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    letter = None
+    title = None
     if request.method == "POST":
-        user_info = request.form.get("user_info", "")
-        job_description = request.form.get("job_description", "")
+        title = request.form.get("title", "Untitled").strip()
+        user_info = request.form.get("user_info", "").strip()
+        job_description = request.form.get("job_description", "").strip()
 
-        sanitized_user_info = helpers.sanitize_input(user_info)
-        sanitized_job_description = helpers.sanitize_input(job_description)
+        try:
+            sanitized_user_info = helpers.sanitize_input(user_info)
+            sanitized_job_description = helpers.sanitize_input(job_description)
+        except Exception:
+            sanitized_user_info = user_info
+            sanitized_job_description = job_description
 
         letter = generate_motivation_letter(
-            sanitized_user_info, sanitized_job_description)
+            sanitized_user_info, sanitized_job_description
+        )
 
-        unique_filename = f"letter_{uuid.uuid4().hex}.txt"
-        filepath = os.path.join(OUTPUT_DIR, unique_filename)
-
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(letter)
-
-        return render_template("result.html", letter=letter, filename=unique_filename)
-
-    return render_template("index.html")
-
-
-@app.route("/download/<path:filename>")
-def download_file(filename):
-    return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
+    return render_template("index.html", letter=letter, title=title)
 
 
 if __name__ == "__main__":

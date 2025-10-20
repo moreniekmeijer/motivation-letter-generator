@@ -1,23 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motivation Letter Generator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
-    <h1>Motivation Letter Generator</h1>
-    <form method="POST">
-        <label>Tell us about yourself:</label><br>
-        <textarea name="user_info" rows="5" cols="50" placeholder="Education, experience, skills..."></textarea><br><br>
+    <div class="container">
+        <h1>Motivation Letter Generator</h1>
+        <div id="generation-limit"></div>
 
-        <label>Paste the job description:</label><br>
-        <textarea name="job_description" rows="10" cols="50"
-            placeholder="Job responsibilities, requirements..."></textarea><br><br>
+        <form method="POST" id="generate-form">
+            <label for="title">Give your letter a title:</label>
+            <input type="text" id="title" name="title" placeholder="e.g. Hostnet Application" required>
 
-        <button type="submit">Generate Letter</button>
-    </form>
+            <label for="user_info">Tell us about yourself:</label>
+            <textarea id="user_info" name="user_info" rows="5"
+                placeholder="Education, experience, skills..."></textarea>
+
+            <label for="job_description">Paste the job description:</label>
+            <textarea id="job_description" name="job_description" rows="10"
+                placeholder="Job responsibilities, requirements..."></textarea>
+
+            <button type="submit" id="generate-btn">Generate Letter</button>
+
+            <div id="loading-spinner" class="hidden">
+                <div class="spinner"></div>
+                <p>🤖 Generating your letter...</p>
+            </div>
+        </form>
+
+        <h2>Your Letter History</h2>
+        <div id="history"></div>
+    </div>
+
+    <!-- Main JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <!-- Jinja2: Save letter after generation -->
+    {% if letter %}
+    <script>
+        // Roep saveNewLetter aan zodra de pagina geladen is
+        window.addEventListener('DOMContentLoaded', function () {
+            saveNewLetter({{ title| tojson }}, {{ letter| tojson }});
+        });
+    </script>
+    {% endif %}
 </body>
 
 </html>

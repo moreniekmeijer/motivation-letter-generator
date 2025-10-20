@@ -1,4 +1,4 @@
 Flask==3.0.3
 langchain==1.0.0
-langchain-google-genai
+langchain-google-genai==3.0.0
 gunicorn==23.0.0
