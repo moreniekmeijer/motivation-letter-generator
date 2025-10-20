@@ -1,5 +1,6 @@
 import os
 from langchain.prompts import PromptTemplate
+from langchain.schema.runnable import RunnableSequence
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 llm = ChatGoogleGenerativeAI(
@@ -9,16 +10,18 @@ llm = ChatGoogleGenerativeAI(
 )
 
 
-def get_prompt_prefix(language: str, tone: str):
+def get_prompt_prefix(language: str, tone: str) -> str:
     """
-    Returns a language + tone specific prefix for each prompt.
+    Return a language + tone specific prefix for each prompt.
     """
-    if language.lower().startswith("n"):
-        return f"Schrijf in het {language.lower()} een motivatiebrief in een {tone.lower()} toon."
-    else:
-        return f"Write the motivation letter in {language} with a {tone.lower()} tone."
+    lang = language.lower()
+    tone = tone.lower()
+    if lang.startswith("n"):
+        return f"Schrijf in het Nederlands een motivatiebrief in een {tone} toon."
+    return f"Write the motivation letter in English with a {tone} tone."
 
 
+# --- Prompt Templates ---
 intro_prompt = PromptTemplate.from_template("""
 {prefix}
 
@@ -81,7 +84,12 @@ Write a polite, optimistic closing paragraph that fits naturally with the rest o
 """)
 
 
-def generate_motivation_letter(user_info: str, job_description: str, language: str = "English", tone: str = "Formal") -> str:
+def generate_motivation_letter(
+    user_info: str,
+    job_description: str,
+    language: str = "English",
+    tone: str = "Formal"
+) -> str:
     """
     Generate a motivation letter in a given language and tone.
     Supported languages: English, Dutch.
@@ -89,17 +97,23 @@ def generate_motivation_letter(user_info: str, job_description: str, language: s
     """
     prefix = get_prompt_prefix(language, tone)
 
-    intro = (intro_prompt | llm).invoke({
-        "prefix": prefix,
-        "user_info": user_info
-    })
+    chain = RunnableSequence(
+        intro_prompt | llm,
+        strengths_prompt | llm,
+        match_prompt | llm,
+        closing_prompt | llm
+    )
 
-    strengths = (strengths_prompt | llm).invoke({
+    inputs = {
         "prefix": prefix,
-        "intro": intro.content,
-        "user_info": user_info
-    })
+        "user_info": user_info,
+        "job_description": job_description
+    }
 
+    intro = (intro_prompt | llm).invoke(
+        {"prefix": prefix, "user_info": user_info})
+    strengths = (strengths_prompt | llm).invoke(
+        {"prefix": prefix, "intro": intro.content, "user_info": user_info})
     match = (match_prompt | llm).invoke({
         "prefix": prefix,
         "intro": intro.content,
@@ -107,7 +121,6 @@ def generate_motivation_letter(user_info: str, job_description: str, language: s
         "user_info": user_info,
         "job_description": job_description
     })
-
     closing = (closing_prompt | llm).invoke({
         "prefix": prefix,
         "intro": intro.content,
